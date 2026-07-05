@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aureon Explorer — Hybrid Search, in 3D</title>
+  <!-- Apply the saved theme before first paint to avoid a flash. -->
+  <script>
+    (function () {
+      try {
+        var q = new URLSearchParams(location.search).get("theme");
+        var t = q || localStorage.getItem("aureon_theme") || "dark";
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) { document.documentElement.setAttribute("data-theme", "dark"); }
+    })();
+  </script>
+  <link rel="stylesheet" href="/static/styles.css" />
+  <!-- Three.js + addons pulled from a CDN. No build step. -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <canvas id="scene"></canvas>
+
+  <!-- Ambient scanlines / vignette overlay -->
+  <div class="vignette"></div>
+
+  <!-- ───────────────────────── Top bar ───────────────────────── -->
+  <header class="topbar glass">
+    <div class="brand">
+      <span class="logo">◈</span>
+      <div>
+        <div class="title">AUREON&nbsp;<b>EXPLORER</b></div>
+        <div class="subtitle">adaptive unified retrieval · dense × sparse · live router</div>
+      </div>
+    </div>
+
+    <form id="search-form" class="search">
+      <input id="query" type="text" autocomplete="off" spellcheck="false"
+             placeholder="Search the corpus…  (try: gateway GW-09 timeout)" />
+      <button id="search-btn" type="submit">SEARCH</button>
+      <button id="reset-btn" type="button" class="reset" title="Clear search &amp; reset the view">RESET</button>
+    </form>
+
+    <div class="corpus-status" id="corpus-status">no index</div>
+    <button class="help-btn theme-btn" id="theme-btn" title="Toggle light / dark">☾</button>
+    <button class="help-btn" id="help-btn" title="How it works">?</button>
+  </header>
+
+  <!-- ─────────────────────── Left: controls ─────────────────────── -->
+  <aside class="panel controls glass" id="controls">
+    <div class="panel-title">SOURCE</div>
+
+    <label class="drop" id="drop">
+      <input id="file-input" type="file" multiple accept=".txt,.md,.pdf" hidden />
+      <div class="drop-inner">
+        <div class="drop-icon">⬆</div>
+        <div class="drop-text">Drop <b>.txt / .md / .pdf</b><br />or click to choose</div>
+      </div>
+    </label>
+    <div id="file-list" class="file-list"></div>
+
+    <textarea id="paste" placeholder="…or paste raw text here"></textarea>
+
+    <div class="btn-row">
+      <button id="index-btn" class="primary">INDEX DOCUMENTS</button>
+      <button id="sample-btn" class="ghost">Load sample corpus</button>
+    </div>
+
+    <div class="panel-title">FUSION METHOD</div>
+    <div class="methods" id="methods">
+      <div class="method-group">
+        <div class="mg-label">retriever</div>
+        <div class="mg-btns">
+          <button data-method="bm25" class="method">bm25</button>
+          <button data-method="dense" class="method">dense</button>
+        </div>
+      </div>
+      <div class="method-group">
+        <div class="mg-label">score fusion</div>
+        <div class="mg-btns">
+          <button data-method="fixed" class="method">fixed α</button>
+          <button data-method="combsum" class="method">combsum</button>
+          <button data-method="combmnz" class="method">combmnz</button>
+          <button data-method="zscore" class="method">zscore</button>
+          <button data-method="softmax" class="method">softmax</button>
+          <button data-method="dbsf" class="method">dbsf</button>
+        </div>
+      </div>
+      <div class="method-group">
+        <div class="mg-label">rank fusion</div>
+        <div class="mg-btns">
+          <button data-method="rrf" class="method">rrf</button>
+          <button data-method="wrrf" class="method">wrrf</button>
+          <button data-method="isr" class="method">isr</button>
+          <button data-method="borda" class="method">borda</button>
+        </div>
+      </div>
+      <div class="method-group">
+        <div class="mg-label">routed (adaptive)</div>
+        <div class="mg-btns">
+          <button data-method="adaptive" class="method active">adaptive</button>
+          <button data-method="adaptive_rrf" class="method">adaptive+rrf</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="alpha-row" id="alpha-row" hidden>
+      <label>fixed α (dense weight)</label>
+      <input id="alpha" type="range" min="0" max="1" step="0.05" value="0.5" />
+      <span id="alpha-val" class="mono">0.50</span>
+    </div>
+
+    <button id="bench-btn" class="ghost bench-btn">⚡ BENCHMARK ALL METHODS</button>
+
+    <div class="legend">
+      <div class="legend-item"><span class="swatch dense"></span> dense · meaning</div>
+      <div class="legend-item"><span class="swatch sparse"></span> sparse · exact terms</div>
+    </div>
+  </aside>
+
+  <!-- ─────────────────────── Sources legend ─────────────────────── -->
+  <aside class="panel groups glass" id="groups" hidden>
+    <div class="panel-title">SOURCES <span id="groups-count" class="tag"></span></div>
+    <div id="groups-list" class="groups-list"></div>
+    <div class="groups-hint">hover to highlight · click to fly to group</div>
+  </aside>
+
+  <!-- ─────────────────────── Router HUD ─────────────────────── -->
+  <section class="hud glass" id="hud">
+    <div class="hud-title">QUERY ROUTER</div>
+    <div class="gauge">
+      <div class="gauge-labels"><span>SPARSE</span><span>DENSE</span></div>
+      <div class="gauge-track">
+        <div class="gauge-fill" id="gauge-fill"></div>
+        <div class="gauge-needle" id="gauge-needle"></div>
+      </div>
+      <div class="gauge-readout">
+        α<sub>dense</sub> = <span id="alpha-readout" class="mono accent">—</span>
+      </div>
+    </div>
+    <div class="hud-row">
+      <span>lexicality</span>
+      <div class="bar"><i id="lex-bar"></i></div>
+      <span id="lex-val" class="mono">—</span>
+    </div>
+    <div class="hud-perf">
+      <span class="hp-label">⚡ latency</span>
+      <span id="perf-val" class="mono accent">—</span>
+      <span id="perf-qps" class="mono hp-qps">—</span>
+    </div>
+    <div class="hud-verdict" id="verdict">awaiting query…</div>
+  </section>
+
+  <!-- ─────────────────────── Results panel ─────────────────────── -->
+  <aside class="panel results glass" id="results-panel" hidden>
+    <div class="panel-title">
+      RESULTS <span id="results-method" class="tag"></span>
+    </div>
+    <div id="results-list" class="results-list"></div>
+  </aside>
+
+  <!-- ─────────────────────── Viewport controls ─────────────────────── -->
+  <div class="viewport-controls glass" id="viewport-controls">
+    <button class="vc-btn" id="zoom-in" title="Zoom in">+</button>
+    <button class="vc-btn" id="zoom-out" title="Zoom out">−</button>
+    <button class="vc-btn small" id="reset-view" title="Fit view to all nodes">FIT</button>
+    <button class="vc-btn small active" id="toggle-labels" title="Show / hide names">Aa</button>
+    <button class="vc-btn active" id="toggle-web" title="Show / hide connection web">⋈</button>
+  </div>
+
+  <!-- ─────────────────────── How-it-works modal ─────────────────────── -->
+  <div class="modal-backdrop" id="help-modal" hidden>
+    <div class="modal glass">
+      <button class="close-x" id="help-close">×</button>
+      <h2>AUREON&nbsp;<b>EXPLORER</b> — what am I looking at?</h2>
+      <p class="lead">
+        This app makes <b>hybrid search</b> visible. Your documents become a 3D
+        galaxy where <b>position = meaning</b> (nearby bubbles are about similar
+        things). When you search, it shows not just <i>what</i> matched, but
+        <i>why</i> — and how the engine decided.
+      </p>
+
+      <h3>What happens behind the scenes</h3>
+      <div class="pipeline">
+        <div class="pipe-step"><div class="n">01</div><div class="t"><b>Ingest</b><br/>Files are split into paragraph-sized chunks — one bubble each.</div></div>
+        <div class="pipe-step"><div class="n">02</div><div class="t"><b>Two searchers</b><br/><span style="color:var(--sparse)">BM25</span> matches exact words; <span style="color:var(--dense)">LSA</span> matches meaning.</div></div>
+        <div class="pipe-step"><div class="n">03</div><div class="t"><b>Router</b><br/>Reads your query and picks how much to trust each — the weight <b>α</b>.</div></div>
+        <div class="pipe-step"><div class="n">04</div><div class="t"><b>Fuse &amp; rank</b><br/>14 fusion methods (score &amp; rank based) combine the scores into the final ranking.</div></div>
+      </div>
+      <p class="lead" style="margin-top:14px">
+        Want the numbers? <b>⚡ BENCHMARK ALL METHODS</b> (left panel) scores every
+        method on quality (nDCG, MRR, MAP, R-Prec, Recall, Precision) <i>and</i>
+        efficiency (latency + QPS) on a labeled corpus.
+      </p>
+
+      <h3>Reading the scene</h3>
+      <div class="legend-grid">
+        <div class="li"><span class="dot d-dense"></span><span><b>Blue bubble</b> — matched on <b>meaning</b> (semantic / dense).</span></div>
+        <div class="li"><span class="dot d-sparse"></span><span><b>Orange bubble</b> — matched on <b>exact terms</b> (keyword / sparse).</span></div>
+        <div class="li"><span class="dot d-star"></span><span><b>Bright star</b> — your query, at the center of its top results.</span></div>
+        <div class="li"><span class="dot d-beam"></span><span><b>Beams</b> — links to the top hits; thicker &amp; brighter = better score.</span></div>
+        <div class="li"><span class="dot" style="background:#4a5580"></span><span><b>Dim bubble</b> — a document that didn't score for this query.</span></div>
+        <div class="li"><span class="dot" style="background:linear-gradient(90deg,var(--sparse),var(--dense))"></span><span><b>Router gauge</b> (bottom) — where α landed: SPARSE ↔ DENSE.</span></div>
+      </div>
+
+      <h3>Try it</h3>
+      <div class="legend-grid">
+        <div class="li"><span>🔎</span><span><code>gateway GW-09 timeout</code> — an exact code. The router swings <b style="color:var(--sparse)">SPARSE</b>.</span></div>
+        <div class="li"><span>🔎</span><span><code>how to lower our public cloud costs</code> — a concept. It leans <b style="color:var(--dense)">DENSE</b>.</span></div>
+      </div>
+
+      <div class="modal-note">
+        Powered by the <code>aureon</code> package (Adaptive Unified Retrieval Engine).
+        Drag to orbit · scroll or the <code>+ / −</code> buttons to zoom ·
+        <code>FIT</code> re-centers · <code>Aa</code> toggles names · click any
+        bubble to read its full text.
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────────── Benchmark / Evaluation modal ─────────────────────── -->
+  <div class="modal-backdrop" id="eval-modal" hidden>
+    <div class="modal glass eval-modal">
+      <button class="close-x" id="eval-close">×</button>
+      <h2>METHOD&nbsp;<b>BENCHMARK</b> — quality × efficiency</h2>
+      <p class="lead" id="eval-sub">
+        Every fusion method scored on the labeled <code>aureon</code> sample corpus
+        (ground-truth relevance sets), using the package's own evaluation metrics.
+      </p>
+
+      <div class="eval-legend">
+        <span><span class="fam-dot fam-retriever"></span>retriever</span>
+        <span><span class="fam-dot fam-score-fusion"></span>score fusion</span>
+        <span><span class="fam-dot fam-rank-fusion"></span>rank fusion</span>
+        <span><span class="fam-dot fam-routed"></span>routed</span>
+        <span class="eval-legend-hint">best per column highlighted · <b class="best-swatch">■</b></span>
+      </div>
+
+      <div id="eval-table-wrap">
+        <div class="eval-loading">▸ click BENCHMARK to run the sweep…</div>
+      </div>
+
+      <div class="modal-note">
+        <b>Quality</b> — nDCG@10 (ranking), MRR (first hit), MAP (avg precision),
+        R-Prec (precision at R), R@10 / P@10 (recall / precision). <b>Efficiency</b> —
+        end-to-end query latency percentiles (p50 / p95) and throughput (QPS).
+        <b>vs RRF</b> — nDCG@10 delta vs the RRF baseline with a paired-bootstrap
+        <i>p</i>-value (<i>p</i>&lt;0.10 marked significant). Metrics computed live
+        by the <code>aureon</code> package — <code>evaluate()</code>,
+        <code>measure()</code>, <code>paired_bootstrap()</code>.
+      </div>
+    </div>
+  </div>
+
+  <!-- Node detail popover -->
+  <div class="detail glass" id="detail" hidden>
+    <button class="detail-close" id="detail-close">×</button>
+    <div class="detail-source" id="detail-source"></div>
+    <div class="detail-text" id="detail-text"></div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast" hidden></div>
+
+  <script type="module" src="/static/scene.js"></script>
+  <script type="module" src="/static/app.js"></script>
+</body>
+</html>

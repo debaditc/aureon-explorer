@@ -1,0 +1,13 @@
+# Aureon Explorer — the app's OWN dependencies only.
+#
+# The aureon CORE package is installed SEPARATELY, BEFORE this file, into the same
+# virtualenv (see the README "Prerequisite" section):
+#
+#   git clone https://github.com/debaditc/aureon.git
+#   cd aureon && pip install -e . && cd ..
+#
+# (aureon brings its own deps: numpy, scikit-learn, rank-bm25.)
+fastapi>=0.110
+uvicorn[standard]>=0.27
+python-multipart>=0.0.9
+pypdf>=4.0
