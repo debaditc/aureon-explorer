@@ -1,4 +1,13 @@
-# Aureon Explorer
+<p align="center">
+  <img src="assets/aureon_explorer_logo.svg" alt="Aureon Explorer — 3D hybrid-search visualizer" width="720"/>
+</p>
+
+# ✦ Aureon Explorer — 3D Hybrid-Search Visualizer
+
+[![Built on Aureon](https://img.shields.io/badge/built%20on-aureon-7AF7FF?style=flat-square)](https://github.com/debaditc/aureon)
+[![FastAPI](https://img.shields.io/badge/FastAPI-Uvicorn-009688?style=flat-square&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
+[![Three.js](https://img.shields.io/badge/Three.js-WebGL-000000?style=flat-square&logo=three.js&logoColor=white)](https://threejs.org)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
 
 A next-gen 3D interface for the [**`aureon`**](https://github.com/debaditc/aureon)
 hybrid-search package. Upload documents, index them, and watch retrieval happen as
@@ -158,6 +167,29 @@ Single-user, in-memory index (POC). Three.js is CDN-loaded — no npm/build step
 - **3D rendering:** [Three.js](https://threejs.org) (bloom / post-processing,
   CSS2D labels), loaded from CDN.
 - **Web server:** [FastAPI](https://fastapi.tiangolo.com) + [Uvicorn](https://www.uvicorn.org).
+
+## 🔖 Cite
+
+If you use Aureon Explorer, please cite both the visualizer and the **`aureon`**
+core engine it is built on:
+
+```bibtex
+@misc{aureon_explorer,
+  author    = {Debaditya Chakravorty},
+  title     = {Aureon Explorer: A 3D Hybrid-Search Visualizer for the Aureon Retrieval Engine},
+  year      = {2026},
+  publisher = {GitHub},
+  url       = {https://github.com/debaditc/aureon-explorer}
+}
+
+@misc{aureon,
+  author    = {Debaditya Chakravorty},
+  title     = {Aureon: Adaptive Unified Retrieval Engine — Dense + Sparse Fusion with a Query Router},
+  year      = {2026},
+  publisher = {GitHub},
+  url       = {https://github.com/debaditc/aureon}
+}
+```
 
 ## License
 

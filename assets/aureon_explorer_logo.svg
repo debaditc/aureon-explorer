@@ -1,0 +1,101 @@
+<svg width="860" height="240" viewBox="0 0 860 240" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Aureon Explorer — 3D hybrid-search visualizer">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="860" y2="240" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0B1220"/>
+      <stop offset="1" stop-color="#141F33"/>
+    </linearGradient>
+    <linearGradient id="word" x1="410" y1="80" x2="720" y2="150" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#F8FAFC"/>
+      <stop offset="1" stop-color="#CBD5E1"/>
+    </linearGradient>
+    <linearGradient id="fuse" x1="428" y1="120" x2="600" y2="120" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#3FA9FF"/>
+      <stop offset="1" stop-color="#FF9A3F"/>
+    </linearGradient>
+    <radialGradient id="halo" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#7AF7FF" stop-opacity="0.6"/>
+      <stop offset="1" stop-color="#7AF7FF" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="4" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="soft" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="2.4" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- panel -->
+  <rect x="0" y="0" width="860" height="240" rx="24" fill="url(#bg)"/>
+  <rect x="1.5" y="1.5" width="857" height="237" rx="22.5" fill="none" stroke="#22304A" stroke-width="1.5"/>
+
+  <!-- subtle dot grid -->
+  <g fill="#1C2A42">
+    <circle cx="700" cy="40" r="1.6"/><circle cx="750" cy="40" r="1.6"/><circle cx="800" cy="40" r="1.6"/>
+    <circle cx="700" cy="200" r="1.6"/><circle cx="750" cy="200" r="1.6"/><circle cx="800" cy="200" r="1.6"/>
+  </g>
+
+  <!-- ===== emblem: the 3D retrieval galaxy ===== -->
+  <g>
+    <!-- orbit ring (3D depth cue) -->
+    <ellipse cx="165" cy="120" rx="120" ry="42" transform="rotate(-16 165 120)"
+             fill="none" stroke="#253552" stroke-width="1.4" stroke-dasharray="3 6"/>
+
+    <!-- faint constellation web -->
+    <g stroke="#2E4066" stroke-width="1.2" opacity="0.8">
+      <path d="M78 70 L258 68"/>
+      <path d="M52 138 L250 172"/>
+      <path d="M258 68 L300 90"/>
+    </g>
+
+    <!-- query beams to the top hits (blue = dense, orange = sparse) -->
+    <g filter="url(#soft)" stroke-linecap="round" fill="none">
+      <path d="M165 116 L258 68"  stroke="#3FA9FF" stroke-width="3.2" opacity="0.95"/>
+      <path d="M165 116 L52 138"  stroke="#3FA9FF" stroke-width="2.6" opacity="0.8"/>
+      <path d="M165 116 L250 172" stroke="#FF9A3F" stroke-width="3.2" opacity="0.95"/>
+      <path d="M165 116 L78 70"   stroke="#FF9A3F" stroke-width="2.6" opacity="0.8"/>
+    </g>
+
+    <!-- idle nodes -->
+    <g fill="#4A5580">
+      <circle cx="300" cy="128" r="3"/><circle cx="120" cy="196" r="2.6"/><circle cx="300" cy="90" r="2.2"/>
+    </g>
+
+    <!-- dense (semantic) nodes -->
+    <circle cx="258" cy="68" r="7.5" fill="#3FA9FF"/>
+    <circle cx="258" cy="68" r="13" fill="none" stroke="#3FA9FF" stroke-width="1.4" opacity="0.4"/>
+    <circle cx="52" cy="138" r="6" fill="#3FA9FF" opacity="0.9"/>
+
+    <!-- sparse (lexical) nodes -->
+    <circle cx="250" cy="172" r="7.5" fill="#FF9A3F"/>
+    <circle cx="250" cy="172" r="13" fill="none" stroke="#FF9A3F" stroke-width="1.4" opacity="0.4"/>
+    <circle cx="78" cy="70" r="6" fill="#FF9A3F" opacity="0.9"/>
+
+    <!-- query-star -->
+    <circle cx="165" cy="116" r="34" fill="url(#halo)"/>
+    <g filter="url(#glow)">
+      <path d="M165 90 L172 109 L191 116 L172 123 L165 142 L158 123 L139 116 L158 109 Z" fill="#EAFFFB"/>
+    </g>
+    <circle cx="165" cy="116" r="3.4" fill="#0B1220"/>
+
+    <!-- tiny labels -->
+    <g font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" letter-spacing="1.5" fill="#64748B">
+      <text x="258" y="50" text-anchor="middle">DENSE</text>
+      <text x="250" y="194" text-anchor="middle">SPARSE</text>
+      <text x="165" y="162" text-anchor="middle">QUERY</text>
+    </g>
+  </g>
+
+  <!-- ===== wordmark ===== -->
+  <text x="392" y="112" font-family="Georgia, 'Times New Roman', serif" font-size="24" fill="#7AF7FF">✦</text>
+  <text x="424" y="116" font-family="ui-sans-serif, system-ui, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="58" font-weight="800" letter-spacing="-1" fill="url(#word)">AUREON</text>
+  <text x="426" y="152" font-family="ui-sans-serif, system-ui, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="30" font-weight="600" letter-spacing="8" fill="#7AF7FF">EXPLORER</text>
+
+  <!-- tagline -->
+  <text x="428" y="180" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12" letter-spacing="2.2" fill="#7C8BA5">3D HYBRID-SEARCH VISUALIZER · DENSE × SPARSE</text>
+
+  <!-- accent underline (dense -> sparse) -->
+  <rect x="428" y="192" width="130" height="4" rx="2" fill="url(#fuse)"/>
+  <rect x="566" y="192" width="36" height="4" rx="2" fill="#22304A"/>
+</svg>
