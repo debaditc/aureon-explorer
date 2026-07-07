@@ -25,6 +25,7 @@ hits — colored by whether the match was won on **meaning (dense / blue)** or
 > its public API. **Full credit for the search engine goes to
 > [github.com/debaditc/aureon](https://github.com/debaditc/aureon).**
 
+
 ## Prerequisite — install the `aureon` core package
 
 Aureon Explorer is a shell over the [`aureon`](https://github.com/debaditc/aureon)
@@ -73,6 +74,10 @@ uvicorn aureon_explorer.server:app --reload
 `requirements.txt` holds **only the app's** dependencies (FastAPI, Uvicorn,
 python-multipart, pypdf). The `aureon` package is installed separately in step 1,
 so it must already be present in the active virtualenv before you run the app.
+
+## Demo
+
+![Aureon demo](assets/aureon-2.gif)
 
 ## How it maps to `aureon`
 
