@@ -43,8 +43,8 @@ cd ..
 ```bash
 git clone https://github.com/debaditc/aureon-explorer.git
 cd aureon-explorer
-chmod 775 run.sh
-./run.sh                 # PORT=9000 ./run.sh for a custom port
+chmod 775 run.sh     # PORT=9000 ./run.sh for a custom port
+./run.sh                 
 ```
 
 And then open "http://localhost:8000/" in the browser
