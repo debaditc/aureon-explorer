@@ -43,8 +43,11 @@ cd ..
 ```bash
 git clone https://github.com/debaditc/aureon-explorer.git
 cd aureon-explorer
+chmod 775 run.sh
 ./run.sh                 # PORT=9000 ./run.sh for a custom port
 ```
+
+And then open "http://localhost:8000/" in the browser
 
 `run.sh` creates `.venv`; if the `aureon` core package isn't importable yet it
 clones + editable-installs it for you, then installs the app requirements and
