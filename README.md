@@ -47,8 +47,6 @@ chmod 775 run.sh     # PORT=9000 ./run.sh for a custom port
 ./run.sh                 
 ```
 
-And then open "http://localhost:8000/" in the browser
-
 `run.sh` creates `.venv`; if the `aureon` core package isn't importable yet it
 clones + editable-installs it for you, then installs the app requirements and
 starts the server.
